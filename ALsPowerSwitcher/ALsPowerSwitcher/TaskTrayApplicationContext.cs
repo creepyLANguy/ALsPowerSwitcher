@@ -15,9 +15,7 @@ namespace ALsPowerSwitcher
   public class TaskTrayApplicationContext : ApplicationContext
   {
     private readonly int balloonTime = 1500;
-    private static readonly string soundPath = @"c:\Windows\Media\Windows Balloon.wav";
-    System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundPath);
-
+    
     private readonly NotifyIcon notifyIcon = new NotifyIcon();
 
     public TaskTrayApplicationContext()
@@ -154,19 +152,6 @@ namespace ALsPowerSwitcher
       notifyIcon.Visible = false;
       Application.Exit();
     }
-
-    void PlaySound()
-    {
-      try
-      {
-        player.Play();
-      }
-      catch (Exception)
-      {        
-      }
-      
-    }
-
   }
 }
 
