@@ -10,6 +10,7 @@ namespace ALsPowerSwitcher
   {
     public string name;
     public string guid;
+    public bool isActive;
   }
 
   public class TaskTrayApplicationContext : ApplicationContext
@@ -17,6 +18,8 @@ namespace ALsPowerSwitcher
     private readonly int balloonTime = 1500;
     
     private readonly NotifyIcon notifyIcon = new NotifyIcon();
+
+    private List<Plan> plans = new List<Plan>();
 
     public TaskTrayApplicationContext()
     {
@@ -27,19 +30,24 @@ namespace ALsPowerSwitcher
       notifyIcon.Visible = true;
     }
 
+    private void InvokeRightClick()
+    {
+      MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
+                 BindingFlags.Instance | BindingFlags.NonPublic);
+      mi.Invoke(notifyIcon, null);
+    }
+
     private void NotifyIcon_Click(object sender,EventArgs e)
     {
       if (((MouseEventArgs)e).Button == MouseButtons.Left)
       {
-        MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
-                 BindingFlags.Instance | BindingFlags.NonPublic);
-        mi.Invoke(notifyIcon, null);
-      }
+        InvokeRightClick();
+      }     
     }
 
     void RefreshPlans()
     {
-      var plans = QueryPlans();
+      plans = QueryPlans();
 
       List<MenuItem> items = new List<MenuItem>();
 
@@ -49,7 +57,7 @@ namespace ALsPowerSwitcher
         var m = new MenuItem(plan.name, new EventHandler(SwitchPlan));
         m.Tag = plan.guid;
 
-        if (plan.name.Contains("*"))
+        if (plan.isActive)
         {
           notifyIcon.Text = plan.name.Replace("*", "");
         }
@@ -87,7 +95,7 @@ namespace ALsPowerSwitcher
       var l = new List<Plan>();
       foreach (var item in s)
       {
-        if (item.Contains("(") == false || item.Contains("(*") == true)
+        if (item.Contains("(") == false || item.Contains("(*") == true || item.Contains("Balanced") == true)
         {
           continue;
         }
@@ -98,9 +106,11 @@ namespace ALsPowerSwitcher
           int nameEnd = item.IndexOf(')');
           string name = item.Substring(nameStart, nameEnd - nameStart);
           name = name.Replace("RyzenT", "Ryzen");
+          bool isActive = false;
           if (item.Contains("*"))
           {
             name += " *";
+            isActive = true;
           }
 
           int guidStart = (item.IndexOf(':')) + 1;
@@ -110,6 +120,7 @@ namespace ALsPowerSwitcher
           var p = new Plan();
           p.name = name;
           p.guid = guid;
+          p.isActive = isActive;
           l.Add(p);
         }
       }
@@ -142,10 +153,42 @@ namespace ALsPowerSwitcher
       notifyIcon.BalloonTipIcon = ToolTipIcon.None;
       notifyIcon.ShowBalloonTip(balloonTime);
 
-      PlaySound();
-
       RefreshPlans();
     }
+
+    //private void PerformToggle()
+    //{
+    //  foreach (var p in plans)
+    //  {
+    //    if (p.isActive != false)
+    //    {
+    //      continue;
+    //    }
+
+    //    var process = new Process();
+    //    process.StartInfo = new ProcessStartInfo()
+    //    {
+    //      UseShellExecute = false,
+    //      CreateNoWindow = true,
+    //      WindowStyle = ProcessWindowStyle.Hidden,
+    //      FileName = "powercfg",
+    //      Arguments = "/s " + p.guid,
+    //      RedirectStandardError = true,
+    //      RedirectStandardOutput = true
+    //    };
+    //    process.Start();
+    //    process.WaitForExit();
+
+    //    var text = p.name;
+    //    notifyIcon.BalloonTipTitle = "Power Plan Changed";
+    //    notifyIcon.BalloonTipText = text;
+    //    notifyIcon.BalloonTipIcon = ToolTipIcon.None;
+    //    notifyIcon.ShowBalloonTip(balloonTime);
+
+    //    RefreshPlans();
+    //    break;
+    //  }
+    //}
 
     void Exit(object sender, EventArgs e)
     {
