@@ -20,12 +20,15 @@ namespace ALsPowerSwitcher
     private readonly NotifyIcon notifyIcon = new NotifyIcon();
 
     private List<Plan> plans = new List<Plan>();
+    
+    private bool doubleClicked = false;
 
     public TaskTrayApplicationContext()
     {
       RefreshPlans();
 
       notifyIcon.Click += NotifyIcon_Click;
+      notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
       notifyIcon.Icon = Properties.Resources.AppIcon;
       notifyIcon.Visible = true;
     }
@@ -37,12 +40,41 @@ namespace ALsPowerSwitcher
       mi.Invoke(notifyIcon, null);
     }
 
-    private void NotifyIcon_Click(object sender,EventArgs e)
+    private void NotifyIcon_Click(object sender, EventArgs e)
     {
+      if (doubleClicked)
+      {
+        doubleClicked = false;
+        return;
+      }
+
       if (((MouseEventArgs)e).Button == MouseButtons.Left)
       {
         InvokeRightClick();
       }     
+    }
+
+    private void NotifyIcon_DoubleClick(object sender, EventArgs e)
+    {
+      doubleClicked = true;
+      int index = -1;
+      var items = notifyIcon.ContextMenu.MenuItems;
+      for (int i = 0; i < plans.Count; ++i)
+      {
+        if (items[i].Text.Contains("*"))
+        {
+          index = i + 1;
+          if (index >= plans.Count)
+          {
+            index = 0;
+          }
+          break;
+        }
+      }
+
+      var m = new MenuItem(items[index].Text);
+      m.Tag = items[index].Tag;
+      SwitchPlan(m, null);
     }
 
     void RefreshPlans()
@@ -54,7 +86,7 @@ namespace ALsPowerSwitcher
       notifyIcon.ContextMenu = new ContextMenu();
       foreach (var plan in plans)
       {
-        var m = new MenuItem(plan.name, new EventHandler(SwitchPlan));
+        var m = new MenuItem(plan.name, SwitchPlan);
         m.Tag = plan.guid;
 
         if (plan.isActive)
@@ -155,40 +187,6 @@ namespace ALsPowerSwitcher
 
       RefreshPlans();
     }
-
-    //private void PerformToggle()
-    //{
-    //  foreach (var p in plans)
-    //  {
-    //    if (p.isActive != false)
-    //    {
-    //      continue;
-    //    }
-
-    //    var process = new Process();
-    //    process.StartInfo = new ProcessStartInfo()
-    //    {
-    //      UseShellExecute = false,
-    //      CreateNoWindow = true,
-    //      WindowStyle = ProcessWindowStyle.Hidden,
-    //      FileName = "powercfg",
-    //      Arguments = "/s " + p.guid,
-    //      RedirectStandardError = true,
-    //      RedirectStandardOutput = true
-    //    };
-    //    process.Start();
-    //    process.WaitForExit();
-
-    //    var text = p.name;
-    //    notifyIcon.BalloonTipTitle = "Power Plan Changed";
-    //    notifyIcon.BalloonTipText = text;
-    //    notifyIcon.BalloonTipIcon = ToolTipIcon.None;
-    //    notifyIcon.ShowBalloonTip(balloonTime);
-
-    //    RefreshPlans();
-    //    break;
-    //  }
-    //}
 
     void Exit(object sender, EventArgs e)
     {
