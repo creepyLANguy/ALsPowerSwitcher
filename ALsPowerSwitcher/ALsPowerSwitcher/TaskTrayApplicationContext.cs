@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Drawing;
 using System.Reflection;
+using System.Resources;
 
 namespace ALsPowerSwitcher
 {
@@ -29,7 +31,7 @@ namespace ALsPowerSwitcher
 
       notifyIcon.Click += NotifyIcon_Click;
       notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
-      notifyIcon.Icon = Properties.Resources.AppIcon;
+      //notifyIcon.Icon = Properties.Resources.Power_saver;
       notifyIcon.Visible = true;
     }
 
@@ -92,6 +94,7 @@ namespace ALsPowerSwitcher
         if (plan.isActive)
         {
           notifyIcon.Text = plan.name.Replace("*", "");
+          SetIcon(notifyIcon.Text);
         }
 
         notifyIcon.ContextMenu.MenuItems.Add(m);
@@ -186,6 +189,19 @@ namespace ALsPowerSwitcher
       notifyIcon.ShowBalloonTip(balloonTime);
 
       RefreshPlans();
+
+      SetIcon(text);
+    }
+
+    void SetIcon(string s)
+    {
+      s = s.Trim();
+      var icon = Properties.Resources.GetIconByRawName(s);
+      if (icon == null)
+      {
+        icon = Properties.Resources.Power_saver;
+      }
+      notifyIcon.Icon = icon;
     }
 
     void Exit(object sender, EventArgs e)

@@ -63,11 +63,39 @@ namespace ALsPowerSwitcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon AppIcon {
+        internal static System.Drawing.Icon AMD_Ryzen_High_Performance {
             get {
-                object obj = ResourceManager.GetObject("AppIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("AMD Ryzen High Performance", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon Default {
+            get {
+                object obj = ResourceManager.GetObject("Default", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon Power_saver {
+            get {
+                object obj = ResourceManager.GetObject("Power saver", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+
+        public static System.Drawing.Icon GetIconByRawName(string s) 
+        {
+            object obj = ResourceManager.GetObject(s, resourceCulture);
+            return ((System.Drawing.Icon)(obj));
+        }
+
+
     }
 }

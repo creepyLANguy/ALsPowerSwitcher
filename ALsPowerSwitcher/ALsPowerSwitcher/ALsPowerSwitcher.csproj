@@ -66,7 +66,16 @@
     <Compile Include="TaskTrayApplicationContext.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppIcon.ico" />
+    <None Include="Power saver.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Ryzen.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Default.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
