@@ -9,7 +9,9 @@
 //------------------------------------------------------------------------------
 
 namespace ALsPowerSwitcher.Properties {
-
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -20,7 +22,7 @@ namespace ALsPowerSwitcher.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resources {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -61,23 +63,23 @@ namespace ALsPowerSwitcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Default {
-            get {
-                object obj = ResourceManager.GetObject("Default", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
         internal static System.Drawing.Icon AMD_Ryzen_High_Performance {
             get {
                 object obj = ResourceManager.GetObject("AMD Ryzen High Performance", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon Default {
+            get {
+                object obj = ResourceManager.GetObject("Default", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
@@ -85,6 +87,15 @@ namespace ALsPowerSwitcher.Properties {
             get {
                 object obj = ResourceManager.GetObject("Power saver", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power Plan Changed.
+        /// </summary>
+        internal static string TaskTrayApplicationContext_SwitchPlan_Power_Plan_Changed {
+            get {
+                return ResourceManager.GetString("TaskTrayApplicationContext_SwitchPlan_Power_Plan_Changed", resourceCulture);
             }
         }
     }

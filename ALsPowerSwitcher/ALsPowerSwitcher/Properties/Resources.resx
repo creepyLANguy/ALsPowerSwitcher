@@ -127,4 +127,7 @@
   <data name="Power saver" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Power saver.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="TaskTrayApplicationContext_SwitchPlan_Power_Plan_Changed" xml:space="preserve">
+    <value>Power Plan Changed</value>
+  </data>
 </root>
