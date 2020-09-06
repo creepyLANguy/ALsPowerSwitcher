@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
-using System.Reflection;
+using System.Linq;
 
 namespace ALsPowerSwitcher
 {
@@ -16,12 +16,24 @@ namespace ALsPowerSwitcher
   public class TaskTrayApplicationContext : ApplicationContext
   {
     private const int BalloonTime = 1500;
+    private const string PlanChangedMessage = "Power Plan Changed";
 
     private readonly NotifyIcon _notifyIcon = new NotifyIcon();
 
     private List<Plan> _plans = new List<Plan>();
-    
+
     //private bool _doubleClicked = false;
+
+    private static readonly List<string> Whitelist = new List<string>()
+    {
+      "AMD Ryzen High Performance",
+      "Power saver",
+    };
+    
+    private static readonly List<KeyValuePair<string, string>> Replacements = new List<KeyValuePair<string, string>>()
+    {
+      new KeyValuePair<string, string>("RyzenT", "Ryzen")
+    };
 
     public TaskTrayApplicationContext()
     {
@@ -33,6 +45,7 @@ namespace ALsPowerSwitcher
       _notifyIcon.Visible = true;
     }
 
+    /*
     private void InvokeRightClick()
     {
       var mi = typeof(NotifyIcon).GetMethod("ShowContextMenu", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -45,6 +58,7 @@ namespace ALsPowerSwitcher
         Console.WriteLine("Failed at InvokeRightClick()");
       }
     }
+    */
 
     private void NotifyIcon_Click(object sender, EventArgs e)
     {
@@ -83,28 +97,26 @@ namespace ALsPowerSwitcher
         break;
       }
 
-      var m = new MenuItem(items[index].Text);
-      m.Tag = items[index].Tag;
+      var m = new MenuItem(items[index].Text) {Tag = items[index].Tag};
       SwitchPlan(m, null);
     }
 
+    /*
     private void NotifyIcon_DoubleClick(object sender, EventArgs e)
     {
       //_doubleClicked = true;
       TogglePlan();
     }
+    */
 
     private void RefreshPlans()
     {
       _plans = QueryPlans();
 
-      var items = new List<MenuItem>();
-
       _notifyIcon.ContextMenu = new ContextMenu();
       foreach (var plan in _plans)
       {
-        var m = new MenuItem(plan.Name, SwitchPlan);
-        m.Tag = plan.Guid;
+        var m = new MenuItem(plan.Name, SwitchPlan) {Tag = plan.Guid};
 
         if (plan.IsActive)
         {
@@ -121,16 +133,19 @@ namespace ALsPowerSwitcher
 
     private static List<Plan> QueryPlans()
     {
-      var process = new Process();
-      process.StartInfo = new ProcessStartInfo()
+      var process = new Process
       {
-        UseShellExecute = false,
-        CreateNoWindow = true,
-        WindowStyle = ProcessWindowStyle.Hidden,
-        FileName = "powercfg",
-        Arguments = "/l",
-        RedirectStandardError = true,
-        RedirectStandardOutput = true
+        StartInfo = new ProcessStartInfo()
+        {
+          UseShellExecute = false,
+          CreateNoWindow = true,
+          WindowStyle = ProcessWindowStyle.Hidden,
+          FileName = "powercfg",
+          Arguments = "/l",
+          RedirectStandardError = true,
+          RedirectStandardOutput = true,
+          //StandardOutputEncoding = Encoding.UTF8
+        }
       };
       process.Start();
 
@@ -140,26 +155,26 @@ namespace ALsPowerSwitcher
       return ScrapePlansFromQueryResult(s);
     }
 
-    private static List<Plan> ScrapePlansFromQueryResult(string[] s)
+    private static List<Plan> ScrapePlansFromQueryResult(string[] results)
     {
-      Array.Sort(s, (x, y) => y.Length.CompareTo(x.Length));
-      var l = new List<Plan>();
-      foreach (var item in s)
+      //Just to get the items in some sort of reverse length order - looks better.
+      Array.Sort(results, (x, y) => y.Length.CompareTo(x.Length));
+
+      //Just want items that are actual power schemes.
+      var filtered = results.Where(item => item.Contains("Power Scheme GUID:")).ToList();
+
+      //Mostly for removing things like the poorly encoded 'TM' from "RyzenTM"
+      var replaced = filtered.Select(item => Replacements.Aggregate(item, (current, rep) => current.Replace(rep.Key, rep.Value))).ToList();
+
+      //Only care about specific power plans as specified by the whitelist.
+      var whitelisted = (from item in replaced from w in Whitelist where item.Contains(w) select item).ToList();
+
+      var list = new List<Plan>();
+      foreach (var item in whitelisted)
       {
-        if (item.Contains("(") == false || item.Contains("(*") || item.Contains("Balanced"))
-        {
-          continue;
-        }
-
-        if (!item.Contains("AMD") && !item.Contains("saver"))
-        {
-          continue;
-        }
-
         var nameStart = (item.IndexOf('(')) + 1;
         var nameEnd = item.IndexOf(')');
         var name = item.Substring(nameStart, nameEnd - nameStart);
-        name = name.Replace("RyzenT", "Ryzen");
         var isActive = false;
         if (item.Contains("*"))
         {
@@ -171,29 +186,29 @@ namespace ALsPowerSwitcher
         var guidEnd = item.IndexOf('(');
         var guid = item.Substring(guidStart, guidEnd - guidStart).Trim();
 
-        var p = new Plan();
-        p.Name = name;
-        p.Guid = guid;
-        p.IsActive = isActive;
-        l.Add(p);
+        var p = new Plan {Name = name, Guid = guid, IsActive = isActive};
+        list.Add(p);
       }
-      return l;
+
+      return list;
     }
 
     private void SwitchPlan(object sender, EventArgs e)
     {
       var guid = ((MenuItem)sender).Tag.ToString();
 
-      var process = new Process();
-      process.StartInfo = new ProcessStartInfo()
+      var process = new Process
       {
-        UseShellExecute = false,
-        CreateNoWindow = true,
-        WindowStyle = ProcessWindowStyle.Hidden,
-        FileName = "powercfg",
-        Arguments = "/s " + guid,
-        RedirectStandardError = true,
-        RedirectStandardOutput = true
+        StartInfo = new ProcessStartInfo()
+        {
+          UseShellExecute = false,
+          CreateNoWindow = true,
+          WindowStyle = ProcessWindowStyle.Hidden,
+          FileName = "powercfg",
+          Arguments = "/s " + guid,
+          RedirectStandardError = true,
+          RedirectStandardOutput = true
+        }
       };
       process.Start();
       process.WaitForExit();
@@ -204,7 +219,7 @@ namespace ALsPowerSwitcher
 
       SetIcon(text);
 
-      _notifyIcon.BalloonTipTitle = "Power Plan Changed";
+      _notifyIcon.BalloonTipTitle = PlanChangedMessage;
       _notifyIcon.BalloonTipText = text;
       _notifyIcon.BalloonTipIcon = ToolTipIcon.None;
       _notifyIcon.ShowBalloonTip(BalloonTime);
