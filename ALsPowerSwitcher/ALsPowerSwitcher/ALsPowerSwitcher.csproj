@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Default.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\Default.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -66,19 +66,18 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="ResourceExtended.cs" />
     <Compile Include="TaskTrayApplicationContext.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Power saver.ico" />
+    <None Include="Icons\Power saver.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Icons\Ryzen.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Ryzen.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Default.ico" />
+    <None Include="Icons\Default.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

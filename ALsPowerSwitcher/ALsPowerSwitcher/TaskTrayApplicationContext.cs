@@ -2,51 +2,55 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Diagnostics;
-using System.Drawing;
 using System.Reflection;
-using System.Resources;
 
 namespace ALsPowerSwitcher
 {
-  struct Plan
+  internal struct Plan
   {
-    public string name;
-    public string guid;
-    public bool isActive;
+    public string Name;
+    public string Guid;
+    public bool IsActive;
   }
 
   public class TaskTrayApplicationContext : ApplicationContext
   {
-    private readonly int balloonTime = 1500;
-    
-    private readonly NotifyIcon notifyIcon = new NotifyIcon();
+    private const int BalloonTime = 1500;
 
-    private List<Plan> plans = new List<Plan>();
+    private readonly NotifyIcon _notifyIcon = new NotifyIcon();
+
+    private List<Plan> _plans = new List<Plan>();
     
-    private bool doubleClicked = false;
+    private bool _doubleClicked = false;
 
     public TaskTrayApplicationContext()
     {
       RefreshPlans();
 
-      notifyIcon.Click += NotifyIcon_Click;
-      notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
+      _notifyIcon.Click += NotifyIcon_Click;
+      _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
       //notifyIcon.Icon = Properties.Resources.Power_saver;
-      notifyIcon.Visible = true;
+      _notifyIcon.Visible = true;
     }
 
     private void InvokeRightClick()
     {
-      MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
-                 BindingFlags.Instance | BindingFlags.NonPublic);
-      mi.Invoke(notifyIcon, null);
+      var mi = typeof(NotifyIcon).GetMethod("ShowContextMenu", BindingFlags.Instance | BindingFlags.NonPublic);
+      if (mi != null)
+      {
+        mi.Invoke(_notifyIcon, null);
+      }
+      else
+      {
+        Console.WriteLine("Failed at InvokeRightClick()");
+      }
     }
 
     private void NotifyIcon_Click(object sender, EventArgs e)
     {
-      if (doubleClicked)
+      if (_doubleClicked)
       {
-        doubleClicked = false;
+        _doubleClicked = false;
         return;
       }
 
@@ -58,20 +62,23 @@ namespace ALsPowerSwitcher
 
     private void NotifyIcon_DoubleClick(object sender, EventArgs e)
     {
-      doubleClicked = true;
-      int index = -1;
-      var items = notifyIcon.ContextMenu.MenuItems;
-      for (int i = 0; i < plans.Count; ++i)
+      _doubleClicked = true;
+      var index = -1;
+      var items = _notifyIcon.ContextMenu.MenuItems;
+      for (var i = 0; i < _plans.Count; ++i)
       {
-        if (items[i].Text.Contains("*"))
+        if (!items[i].Text.Contains("*"))
         {
-          index = i + 1;
-          if (index >= plans.Count)
-          {
-            index = 0;
-          }
-          break;
+          continue;
         }
+
+        index = i + 1;
+        if (index >= _plans.Count)
+        {
+          index = 0;
+        }
+
+        break;
       }
 
       var m = new MenuItem(items[index].Text);
@@ -79,32 +86,32 @@ namespace ALsPowerSwitcher
       SwitchPlan(m, null);
     }
 
-    void RefreshPlans()
+    private void RefreshPlans()
     {
-      plans = QueryPlans();
+      _plans = QueryPlans();
 
-      List<MenuItem> items = new List<MenuItem>();
+      var items = new List<MenuItem>();
 
-      notifyIcon.ContextMenu = new ContextMenu();
-      foreach (var plan in plans)
+      _notifyIcon.ContextMenu = new ContextMenu();
+      foreach (var plan in _plans)
       {
-        var m = new MenuItem(plan.name, SwitchPlan);
-        m.Tag = plan.guid;
+        var m = new MenuItem(plan.Name, SwitchPlan);
+        m.Tag = plan.Guid;
 
-        if (plan.isActive)
+        if (plan.IsActive)
         {
-          notifyIcon.Text = plan.name.Replace("*", "");
-          SetIcon(notifyIcon.Text);
+          _notifyIcon.Text = plan.Name.Replace("*", "");
+          SetIcon(_notifyIcon.Text);
         }
 
-        notifyIcon.ContextMenu.MenuItems.Add(m);
+        _notifyIcon.ContextMenu.MenuItems.Add(m);
       }
-      notifyIcon.ContextMenu.MenuItems.Add("-");
-      MenuItem exitMenuItem = new MenuItem("Exit", new EventHandler(Exit));
-      notifyIcon.ContextMenu.MenuItems.Add(exitMenuItem);
+      _notifyIcon.ContextMenu.MenuItems.Add("-");
+      var exitMenuItem = new MenuItem("Exit", new EventHandler(Exit));
+      _notifyIcon.ContextMenu.MenuItems.Add(exitMenuItem);
     }
 
-    List<Plan> QueryPlans()
+    private List<Plan> QueryPlans()
     {
       var process = new Process();
       process.StartInfo = new ProcessStartInfo()
@@ -118,13 +125,14 @@ namespace ALsPowerSwitcher
         RedirectStandardOutput = true
       };
       process.Start();
-      string[] s = process.StandardOutput.ReadToEnd().Split('\n');
+
+      var s = process.StandardOutput.ReadToEnd().Split('\n');
       process.WaitForExit();
 
       return ScrapePlansFromQueryResult(s);
     }
 
-    List<Plan> ScrapePlansFromQueryResult(string[] s)
+    static List<Plan> ScrapePlansFromQueryResult(string[] s)
     {
       Array.Sort(s, (x, y) => y.Length.CompareTo(x.Length));
       var l = new List<Plan>();
@@ -148,25 +156,25 @@ namespace ALsPowerSwitcher
             isActive = true;
           }
 
-          int guidStart = (item.IndexOf(':')) + 1;
-          int guidEnd = item.IndexOf('(');
-          string guid = item.Substring(guidStart, guidEnd - guidStart).Trim();
+          var guidStart = (item.IndexOf(':')) + 1;
+          var guidEnd = item.IndexOf('(');
+          var guid = item.Substring(guidStart, guidEnd - guidStart).Trim();
 
           var p = new Plan();
-          p.name = name;
-          p.guid = guid;
-          p.isActive = isActive;
+          p.Name = name;
+          p.Guid = guid;
+          p.IsActive = isActive;
           l.Add(p);
         }
       }
       return l;
     }
 
-    void SwitchPlan(object sender, EventArgs e)
+    private void SwitchPlan(object sender, EventArgs e)
     {
       //MessageBox.Show("powercfg /s " + ((MenuItem)sender).Tag);
 
-      string guid = ((MenuItem)sender).Tag.ToString();
+      var guid = ((MenuItem)sender).Tag.ToString();
 
       var process = new Process();
       process.StartInfo = new ProcessStartInfo()
@@ -183,30 +191,26 @@ namespace ALsPowerSwitcher
       process.WaitForExit();
 
       var text = ((MenuItem)sender).Text.Replace("*", "");
-      notifyIcon.BalloonTipTitle = "Power Plan Changed";
-      notifyIcon.BalloonTipText = text;
-      notifyIcon.BalloonTipIcon = ToolTipIcon.None;
-      notifyIcon.ShowBalloonTip(balloonTime);
+      _notifyIcon.BalloonTipTitle = "Power Plan Changed";
+      _notifyIcon.BalloonTipText = text;
+      _notifyIcon.BalloonTipIcon = ToolTipIcon.None;
+      _notifyIcon.ShowBalloonTip(BalloonTime);
 
       RefreshPlans();
 
       SetIcon(text);
     }
 
-    void SetIcon(string s)
+    private void SetIcon(string s)
     {
       s = s.Trim();
-      var icon = Properties.Resources.GetIconByRawName(s);
-      if (icon == null)
-      {
-        icon = Properties.Resources.Power_saver;
-      }
-      notifyIcon.Icon = icon;
+      var icon = ResourceExtended.GetIconByRawName(s) ?? Properties.Resources.Default;
+      _notifyIcon.Icon = icon;
     }
 
-    void Exit(object sender, EventArgs e)
+    private void Exit(object sender, EventArgs e)
     {
-      notifyIcon.Visible = false;
+      _notifyIcon.Visible = false;
       Application.Exit();
     }
   }
