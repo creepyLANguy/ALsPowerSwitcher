@@ -218,6 +218,8 @@ namespace ALsPowerSwitcher
       RefreshPlans();
 
       SetIcon(text);
+      
+      _notifyIcon.Visible = true;
 
       _notifyIcon.BalloonTipTitle = PlanChangedMessage;
       _notifyIcon.BalloonTipText = text;
