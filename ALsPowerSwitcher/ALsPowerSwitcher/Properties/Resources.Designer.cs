@@ -19,7 +19,7 @@ namespace ALsPowerSwitcher.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -63,9 +63,9 @@ namespace ALsPowerSwitcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon AMD_Ryzen_High_Performance {
+        internal static System.Drawing.Icon Default {
             get {
-                object obj = ResourceManager.GetObject("AMD Ryzen High Performance", resourceCulture);
+                object obj = ResourceManager.GetObject("Default", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace ALsPowerSwitcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon Default {
+        internal static System.Drawing.Icon High_performance {
             get {
-                object obj = ResourceManager.GetObject("Default", resourceCulture);
+                object obj = ResourceManager.GetObject("High performance", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

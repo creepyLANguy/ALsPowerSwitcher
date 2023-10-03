@@ -26,7 +26,7 @@ namespace ALsPowerSwitcher
 
     private static readonly List<string> Whitelist = new List<string>()
     {
-      "AMD Ryzen High Performance",
+      "High performance",
       "Power saver",
     };
     
